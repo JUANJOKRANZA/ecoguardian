@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>host</title>
+<body style="background:#0b1f16"><div id="menu"></div><div id="eng"></div>
+<script>
+const frames=new Map();
+window.addEventListener('message',e=>{const d=e.data||{};if(!d.isStreamlitMessage)return;
+ for(const [f,args] of frames){ if(f.contentWindow===e.source){
+  if(d.type==='streamlit:componentReady') e.source.postMessage({type:'streamlit:render',args:args,disabled:false,theme:{}},'*');
+  if(d.type==='streamlit:setFrameHeight') f.style.height=d.height+'px'; } }});
+function mount(slot,args){const f=document.createElement('iframe');f.src='/eco_ambient/index.html';f.style.cssText='width:360px;border:0;height:0';frames.set(f,args);document.getElementById(slot).appendChild(f);return f}
+function unmount(slot){const el=document.getElementById(slot);[...el.children].forEach(f=>{frames.delete(f);f.remove()})}
+function rerender(slot,args){const el=document.getElementById(slot);[...el.children].forEach(f=>{frames.set(f,args);f.contentWindow.postMessage({type:'streamlit:render',args},'*')})}
+</script>

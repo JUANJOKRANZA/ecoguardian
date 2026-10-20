@@ -1,0 +1,14 @@
+EcoGuardian AI v18 — EcoParty globo caricaturesco
+
+Cambios:
+- Se agregó el reto de globo a la rotación de minijuegos ambientales.
+- El globo responde a pulsaciones/toques en PC y celular; detenerlo registra el resultado.
+- La presión visual escala y el personaje cambia de expresión; el globo tiembla al acercarse al límite y muestra una explosión al rebasarlo.
+- Se añadió persistencia de la presión y el estado por jugador/ronda en salas online, con máximo de 12 jugadores según las reglas existentes.
+- En el modo local por turnos, cada jugador infla y detiene su globo en el mismo dispositivo.
+- Se añadió prueba automatizada de inflado, explosión, puntuación y protección contra doble registro.
+
+Límites conocidos:
+- Las animaciones son CSS/emoji ligeros y no modelos 3D renderizados; el diseño es caricaturesco y compatible con Streamlit.
+- El juego online requiere que los participantes usen la misma instalación y base de datos compartida.
+- La interfaz y la lógica se validaron con pruebas automatizadas; no se realizó una prueba física simultánea con 12 dispositivos.

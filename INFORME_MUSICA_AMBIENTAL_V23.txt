@@ -1,0 +1,45 @@
+EcoGuardian AI v23 — música ambiental persistente
+=================================================
+
+Cambios
+-------
+- eco/media.py: el reproductor crea/reutiliza un único elemento HTMLAudioElement con ID
+  ecoguardian-persistent-ambient en el documento principal del navegador. Se mantiene loop,
+  volumen inicial 10 %, controles reales de volumen/reproducción y mensajes en español.
+  El volumen se conserva en localStorage del navegador cuando este lo permite.
+- eco/pages.py: el control visible queda en el menú del perfil, dentro de «Sonidos y ambiente».
+  Al desactivar el interruptor, se pausa el elemento compartido sin crear otro reproductor.
+  El reproductor visible es adaptable y tiene altura suficiente para mostrar sus controles.
+- eco/assets/reciclar_ambiente.mp3: se conserva el recurso original sin sustituirlo.
+
+Persistencia y límites
+---------------------
+El estado de reproducción vive en el elemento Audio del documento principal, no en el iframe
+que contiene los controles ni en st.session_state. Por eso la destrucción/recreación del iframe
+de controles en un rerun no reinicia el audio. Esta técnica depende de que la política de
+sandbox/origen de la versión de Streamlit y del navegador permita acceder a parent.document.
+Si el navegador lo bloquea, la interfaz informa del problema; no se declara que esté sonando.
+El navegador puede exigir un gesto del usuario antes de permitir audio. La persistencia solo
+cubre reruns/navegación interna dentro del mismo documento/pestaña; no garantiza continuidad
+al recargar la pestaña, cerrar el navegador o abrir una sesión nueva.
+
+Pruebas ejecutadas
+------------------
+- python -m py_compile eco/media.py eco/pages.py: correcto.
+- node --check sobre el JavaScript generado por ambient_html(): correcto.
+- python -m pytest -q: 71 passed.
+- Verificado que eco/assets/reciclar_ambiente.mp3 existe y tiene 6,987,232 bytes.
+- Verificada la generación del HTML, el control deslizante 0–100 y la configuración loop.
+
+Pruebas no ejecutadas
+---------------------
+No se ejecutó una prueba manual real en navegador ni una prueba acústica automatizada; tampoco
+se dispuso de una sesión de escritorio/móvil real para verificar políticas de autoplay y
+continuidad audible en cada navegador. La continuidad entre reruns se implementa por diseño,
+pero debe confirmarse en los navegadores objetivo al desplegar.
+
+Ejecución
+---------
+Desde la carpeta ecoguardian, instalar dependencias y ejecutar:
+  pip install -r requirements.txt
+  streamlit run app.py

@@ -1,0 +1,122 @@
+ECOGUARDIAN AI — panel de acceso y actividades educativas
+========================================================
+
+REQUISITOS
+- Windows 10/11 y Python 3.10 o superior.
+- Conexión a internet la primera vez para instalar librerías.
+
+INICIAR EN WINDOWS
+1. Extrae TODO el ZIP en una carpeta.
+2. Instala Python desde https://www.python.org/downloads/ y marca “Add Python to PATH”.
+3. Haz doble clic en iniciar_windows.bat.
+4. En la primera apertura, el lanzador pedirá una clave inicial de configuración. Escríbela y guárdala temporalmente.
+5. En el navegador, escribe esa misma clave inicial y crea el usuario/contraseña del administrador (mínimo 12 caracteres).
+6. Después, inicia sesión desde la pestaña Administrador. En próximos arranques, puedes dejar vacía la solicitud de clave inicial: ya no se usa cuando la cuenta administradora existe.
+
+ACCESO Y SEGURIDAD
+- La cuenta administradora solo puede crearse con la clave inicial que se define al iniciar el servidor. En alojamiento web, configura ECOGUARDIAN_SETUP_KEY como variable secreta antes del primer arranque y crea el administrador antes de compartir el sitio.
+- Las contraseñas se guardan como hashes con sal (no como texto legible).
+- Los estudiantes se registran con nombre, usuario y contraseña. Su cuenta queda pendiente hasta que el administrador la autorice.
+- En “Autorizar estudiantes”, el administrador aprueba las cuentas.
+- En “Sala de clase”, el administrador selecciona los estudiantes autorizados desde una lista desplegable múltiple; ya no tiene que copiar ni pegar nombres.
+- El administrador crea la sala y comparte el PIN. El estudiante inicia sesión con su propia cuenta y escribe el PIN. El sistema verifica la cuenta seleccionada para esa sala, evitando errores por espacios, tildes o nombres repetidos.
+- La vista de estudiante no muestra el menú de administración ni las otras secciones.
+- Modo libre: no revela si la respuesta fue correcta o incorrecta durante el examen; muestra aciertos, errores y porcentaje solo al finalizar.
+- Modo restringido: avisa si la respuesta es correcta y exige acertar para avanzar. Solo la respuesta correcta al PRIMER intento suma puntos.
+
+REGLAS DEL EXAMEN (versión 2)
+- UNA sola oportunidad por estudiante y por sala. Si vuelve a escribir el PIN:
+    · Actividad en curso -> aparece el aviso «Ya estabas realizando esta actividad» y continúa en el mismo reto, con las mismas preguntas.
+    · Actividad terminada -> aparece el aviso «Ya realizaste esta actividad» y no puede entrar de nuevo.
+- El progreso se guarda en la base de datos: si recarga la página, se cae el internet o cierra sesión, no se sortea otro examen.
+- Durante el examen NO se muestran puntos, aciertos ni precisión. Todo se revela al terminar (medalla, estrellas, puntaje y tiempo).
+- Cada reto se responde con un solo clic y queda bloqueado: el doble clic o pulsar en zonas en blanco ya no contesta el reto siguiente. Para pasar al siguiente hay que pulsar «Siguiente reto».
+- Dos pestañas o dispositivos a la vez no pueden duplicar respuestas (la base de datos lo impide).
+- Bloqueo de 5 minutos tras 5 intentos fallidos de contraseña o de PIN.
+- Panel del docente (Sala de clase): ver quién no ha empezado, quién va en curso y quién terminó; cerrar/abrir la sala; permitir la revisión de respuestas al terminar (opcional) y, solo en casos de falla técnica comprobada, permitir que un estudiante repita.
+- «EcoReto» en el menú del administrador es el modo ENSAYO: tiene puntaje, rachas y niveles, y no guarda resultados de estudiantes.
+
+ACTIVIDADES
+- Clasificación de residuos: 60 retos aleatorizados con canecas roja, verde, blanca y negra.
+- Contaminación auditiva: 60 situaciones educativas sobre prevención y respuesta al ruido.
+- Taller combinado: mezcla aleatoriamente retos de ambos temas.
+- Al crear una sala, se puede elegir 10, 20, 30, 50, 60 o un número personalizado de 1 a 60.
+- EcoSilencio incluye un monitor de micrófono continuo en el navegador, con semáforo y gráfica en vivo. Requiere permiso del micrófono y normalmente HTTPS o localhost.
+- EcoScan conserva el clasificador experimental por imagen del proyecto original.
+
+RESULTADOS Y USO ENTRE DISPOSITIVOS
+- La base de datos local se guarda en ecoguardian.sqlite3 junto a app.py.
+- Si todos los dispositivos se conectan a la misma instancia de la aplicación y al mismo almacenamiento, podrán consultar los datos de esa instancia. Copiar el ZIP o ejecutar otra instancia crea bases separadas.
+- Para una clase por internet con persistencia real, hay que publicar la aplicación con una base de datos compartida y persistente (por ejemplo, PostgreSQL) y configurar el acceso inicial del administrador antes de abrirla al público. Este ZIP todavía no incluye esa configuración de producción; no lo consideres listo para una exposición pública en internet hasta desplegarlo y probarlo.
+- Para uso local, los teléfonos deben estar en la misma red Wi-Fi y el servidor debe seguir encendido. Comparte la dirección base de la app y el PIN de la sala; no uses enlaces con parámetros antiguos.
+- En un alojamiento publicado, configura ECOGUARDIAN_PUBLIC_URL con la URL real (por ejemplo, la dirección que proporciona el alojamiento); la pantalla de resultados la mostrará para copiarla junto con el PIN.
+
+IMPORTANTE
+- El micrófono mide un nivel relativo estimado, no dB SPL certificado.
+- La voz depende del navegador/dispositivo.
+- La clasificación de residuos es educativa. Jeringas y residuos peligrosos son ejemplos virtuales: nunca los manipules para el juego.
+
+SI EL DOBLE CLIC NO FUNCIONA
+Abre PowerShell en esta carpeta y ejecuta:
+  python -m venv venv
+  .\venv\Scripts\Activate.ps1
+  python -m pip install -r requirements.txt
+  streamlit run app.py
+
+
+MEJORAS DE PRESENTACIÓN Y FUNCIONES (edición mejorada)
+------------------------------------------------------
+- Diseño visual renovado, tarjetas e indicadores con mejor jerarquía visual.
+- Sesión persistente de administrador/estudiante durante 14 días en este navegador; evita volver a iniciar sesión al recargar. Al cerrar sesión, el token se revoca.
+- El estudiante puede recuperar la actividad abierta al recargar, y el progreso de retos sigue guardándose en SQLite.
+- Centro de notificaciones de nuevos registros; se actualiza cada 10 segundos mientras se mantiene abierta esa sección.
+- Mensajes privados del docente a los estudiantes seleccionados en una sala, incluido el PIN.
+- Panel del estudiante con mensajes, historial, retos ganados/perdidos y puntos acumulados; acceso a EcoSilencio.
+- EcoSilencio usa mensajes de orientación más claros para cada estado del semáforo.
+
+IMPORTANTE PARA USO REAL
+------------------------
+La medición del micrófono es una estimación relativa, no un sonómetro certificado. La app debe ejecutarse en HTTPS o localhost para el micrófono. SQLite es local a la instancia; para acceso simultáneo por internet, despliega con almacenamiento persistente compartido. Antes de una exposición, prueba registro, autorización, mensajes, PIN y recarga en dos navegadores/dispositivos. No es posible garantizar ausencia absoluta de errores en todos los equipos o redes.
+
+
+MEJORAS VISUALES (edición profesional)
+--------------------------------------
+- Contraste reforzado para botones, controles, textos y estados de foco.
+- Tarjetas de canecas con jerarquía tipográfica más clara y cuatro colores: blanca, verde, negra y roja.
+- La caneca roja se presenta como una guía educativa para residuos que requieren manejo especial; no sustituye las instrucciones del colegio ni las del gestor autorizado.
+- El clasificador por imagen es experimental: una fotografía por sí sola no identifica de forma fiable un residuo peligroso. Si hay dudas, sigue el protocolo local y no manipules el residuo.
+
+NOTA SOBRE ALOJAMIENTO
+----------------------
+Esta entrega mejora la interfaz y amplía la guía de canecas. Conserva la base SQLite local de esta versión; todavía no incluye la migración a PostgreSQL ni una configuración de servidor de producción. Para que varios equipos compartan datos, todos deben acceder a la misma instancia y almacenamiento persistente. Antes de uso institucional, configura el alojamiento y verifica copias de seguridad y permisos.
+
+PERFIL Y NOTIFICACIONES (edición visual v5)
+- En la cabecera, abre el botón con tu nombre para editar el nombre visible, subir una foto de perfil o quitarla.
+- La foto se guarda en la base de datos local del proyecto. Haz una copia de seguridad de ecoguardian.sqlite3 antes de mover la instalación.
+- La campana muestra un desplegable compacto. En administrador aparecen las solicitudes pendientes y notificaciones recientes; en estudiante, los mensajes privados del docente.
+- Esta edición se ha validado sintácticamente, pero requiere una prueba de interfaz en el equipo donde se ejecutará. No es todavía un despliegue de producción con PostgreSQL.
+
+
+NOVEDADES v8
+- Las cuatro canecas de Inicio son interactivas: pulsa una para abrir su información.
+- Se explica por qué el micrófono falla por HTTP desde otros ordenadores.
+- Consulta CONFIGURAR_HTTPS_MICROFONO.md y Caddyfile.HTTPS.ejemplo para planificar HTTPS en la red del colegio.
+
+NOVEDADES v12 (ampliación funcional)
+------------------------------------
+- Se añadió registro e inicio de sesión para docentes. La cuenta docente queda pendiente y debe aprobarla el administrador.
+- El panel de autorización permite aprobar o rechazar solicitudes de estudiantes y docentes.
+- Se añadió EcoPuff: el anfitrión crea una sala con código, elige categoría, dificultad, rondas y segundos por ronda; los jugadores se unen con el código.
+- EcoPuff guarda participantes, respuestas, puntos y chat de sala en SQLite. Incluye preguntas de separación de residuos y guía de colores con advertencias para residuos especiales.
+- Se añadió mensajería privada básica de docentes a estudiantes.
+- Se mantiene el perfil compacto y la campana existentes, además de las actividades de EcoSilencio, EcoReto, EcoScan y las salas tradicionales.
+
+LÍMITES IMPORTANTES DE ESTA ENTREGA
+-----------------------------------
+- EcoPuff es una versión funcional inicial, no un torneo de producción con sincronización automática garantizada. La actualización de la vista es manual; el anfitrión avanza las rondas y debe actualizar la pantalla. No se debe anunciar como competición de latencia certificada: el orden se registra en el servidor SQLite, pero no hay temporizador autoritativo con cierre automático transaccional completo.
+- La categoría de contaminación auditiva/visual y el modo mixto están en el selector, pero el banco interactivo de esta primera versión contiene principalmente clasificación de residuos. No afirmar que todas las categorías ya tienen bancos completos.
+- Todavía no incluye campeonatos intercolegiales reales, equipos, certificados automáticos, medallas persistentes, muerte súbita de desempate ni salas con sincronización push/WebSocket.
+- El docente ve la gestión de sala tradicional disponible en la app, pero la separación completa de datos por docente/clase requiere una auditoría adicional de permisos. No usar datos reales de estudiantes hasta completar esa revisión.
+- Los mensajes privados y el chat de sala son básicos; todavía no hay chat de grupos de clase independiente ni adjuntos seguros.
+- Se conserva SQLite local. Para varios colegios/dispositivos en internet hace falta desplegar con base de datos compartida persistente y revisar sesiones, permisos, HTTPS, copias de seguridad y aislamiento multiinstitución.
+- El estado de esta versión se verificó con compilación Python y pruebas unitarias existentes (9 pruebas). No se ha realizado una prueba integral de navegador/cámara/micrófono en varios dispositivos en esta sesión.

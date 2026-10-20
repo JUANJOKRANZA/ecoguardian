@@ -1,0 +1,24 @@
+ECOGUARDIAN AI v16 — ECOAVENTURA Y PERMISOS
+
+Novedades
+- Se añadió EcoAventura al portal de estudiantes.
+- Se añadió al administrador la sección “Permisos EcoAventura” para habilitar o revocar juegos por docente, configurar vigencia y límite de minutos indicado.
+- Se añadió al docente “EcoAventura” para asignar juegos a cuentas estudiantiles autorizadas, configurar fecha de inicio/fin y retirar accesos.
+- Los permisos se guardan en SQLite y se comprueban en servidor al mostrar los juegos. La revocación del permiso del docente invalida también los permisos de sus estudiantes.
+- Se agregó un registro de auditoría para cambios de permisos.
+- Juegos disponibles en el catálogo: EcoSonidos (pista sonora electrónica demostrativa), EcoPuff Arcade (reutiliza el juego existente), EcoRunner (reto de clasificación), EcoRetos y EcoVerdadero o Falso.
+- Se conservaron los módulos existentes y las pruebas automatizadas actuales.
+
+Instalación
+1. Descomprime el ZIP.
+2. Instala dependencias: pip install -r requirements.txt
+3. Inicia con iniciar_windows.bat o streamlit run app.py.
+4. Inicia sesión como administrador y abre “Permisos EcoAventura”. Autoriza los juegos para cada docente.
+5. El docente inicia sesión, abre “EcoAventura” y asigna los juegos autorizados a estudiantes.
+
+Alcance y límites que deben conocerse
+- La vigencia de acceso se valida en servidor; el campo de minutos es una configuración registrada, pero esta versión aún no aplica un contador acumulado de tiempo real por estudiante ni un cierre forzoso al alcanzar minutos.
+- La asignación docente-estudiante se guarda en la tabla de permisos; este proyecto todavía no tiene una relación normalizada de cursos y matrícula por docente, por lo que el selector muestra estudiantes autorizados de la institución en lugar de verificar pertenencia a un curso propio.
+- EcoSonidos usa tonos sintéticos como demostración, no grabaciones ambientales reales.
+- Los juegos y permisos funcionan con la base SQLite local de esta instalación. Para varias instancias/servidores o colegios aislados se necesita una base de datos compartida y una estrategia multiinstitución antes de desplegar en producción.
+- Las 9 pruebas existentes pasan y app.py compila. No se ha realizado una prueba integral en navegador ni un despliegue HTTPS en un colegio.

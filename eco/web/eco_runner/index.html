@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+html,body{margin:0;background:#0b1f16;font-family:system-ui,Arial,sans-serif;color:#f4eedb}
+#wrap{max-width:520px;margin:0 auto;position:relative}
+canvas{width:100%;display:block;border-radius:16px;touch-action:none;background:#12331f}
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;background:#0b1f16e6;border-radius:16px;padding:22px;gap:10px}
+.ov h2{margin:0;font-size:1.7rem}.ov p{margin:0;line-height:1.5;opacity:.92}
+button{font:inherit;font-weight:800;font-size:1.1rem;border:0;border-radius:14px;padding:14px 26px;background:#4cb97b;color:#06240f;cursor:pointer;box-shadow:0 5px 0 #2c7a4d}
+button:active{transform:translateY(3px);box-shadow:0 2px 0 #2c7a4d}
+.bins{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;font-size:.8rem}.bins span{padding:4px 9px;border-radius:99px;font-weight:700;color:#fff}
+</style></head><body>
+<div id="wrap"><canvas id="c" width="480" height="640"></canvas>
+<div class="ov" id="start"><h2>🏃 EcoRunner</h2>
+<p>¡Corre hacia la caneca correcta! Aparece un residuo arriba y las 4 canecas vienen hacia ti. Elige carril con las flechas, deslizando o tocando el carril.</p>
+<div class="bins"><span style="background:#7d8a94">Blanca · aprovechables</span><span style="background:#2e9b4f">Verde · orgánicos</span><span style="background:#34383d">Negra · no aprovechables</span><span style="background:#c8333a">Roja · peligrosos</span></div>
+<button id="go">▶ ¡A correr!</button></div>
+<div class="ov" id="end" style="display:none"></div></div>
+<script>
+"use strict";
+const post = m => window.parent.postMessage(Object.assign({isStreamlitMessage:true}, m), "*");
+const BINS = [{n:"Blanca",e:"♻️",c:"#8c9aa5"},{n:"Verde",e:"🌿",c:"#2e9b4f"},{n:"Negra",e:"🗑️",c:"#3a3f45"},{n:"Roja",e:"☣️",c:"#c8333a"}];
+const ITEMS = [
+ ["🍌","cáscara de banano",1,"Los restos de comida son orgánicos: se vuelven abono."],
+ ["🧴","botella plástica limpia",0,"El plástico limpio y seco es aprovechable."],
+ ["📰","periódico seco",0,"El papel y el cartón secos se reciclan."],
+ ["🥫","lata de atún vacía",0,"Los metales limpios son aprovechables."],
+ ["🍾","botella de vidrio",0,"El vidrio se recicla una y otra vez."],
+ ["🔋","pila usada",3,"Las pilas son residuos peligrosos: contaminan el agua y el suelo."],
+ ["💡","bombillo fluorescente",3,"Contiene mercurio, un residuo peligroso."],
+ ["🍎","corazón de manzana",1,"Es orgánico y sirve para compostar."],
+ ["🧻","papel higiénico usado",2,"El papel sucio no se puede reciclar."],
+ ["🍬","envoltura de dulce",2,"Los empaques metalizados y sucios no son aprovechables."],
+ ["📦","caja de cartón seca",0,"El cartón seco se recicla."],
+ ["🥚","cáscaras de huevo",1,"Son orgánicas y aportan calcio al compost."],
+ ["💊","medicamento vencido",3,"Los medicamentos son peligrosos: nunca al desagüe ni a la basura común."],
+ ["🚬","colilla de cigarrillo",2,"No es aprovechable y contamina mucho el agua."],
+ ["🥡","icopor con grasa",2,"El icopor sucio no se recicla."],
+ ["🍂","hojas secas",1,"Las hojas son orgánicas: excelente abono."],
+ ["🧪","envase de pintura",3,"Los químicos son residuos peligrosos."],
+ ["🧦","calcetín roto",2,"Los textiles rotos van a la bolsa negra."],
+ ["🥤","vaso plástico limpio",0,"Si está limpio y seco, se aprovecha."],
+ ["☕","borra de café",1,"Es orgánica y fertiliza las plantas."],
+ ["🧃","caja de jugo limpia",0,"Los envases multicapa limpios son aprovechables."]
+];
+const TOTAL = 15, LIVES = 3, W = 480, H = 640, LANE_W = W / 4, PY = H - 120, GATE_H = 86;
+const cv = document.getElementById("c"), g = cv.getContext("2d");
+let narrator = true, sound = true, ac = null;
+
+function beep(f, d, type, vol, f2){ if (!sound) return; try { ac = ac || new (window.AudioContext || window.webkitAudioContext)(); if (ac.state === "suspended") ac.resume();
+  const o = ac.createOscillator(), v = ac.createGain(), t = ac.currentTime; o.type = type || "square"; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+  v.gain.setValueAtTime(vol || .08, t); v.gain.exponentialRampToValueAtTime(.0001, t + d); o.connect(v); v.connect(ac.destination); o.start(t); o.stop(t + d + .02); } catch (e) {} }
+const sfx = {ok(){beep(660,.1);setTimeout(()=>beep(990,.15),90)}, bad(){beep(200,.35,"sawtooth",.1,70)}, move(){beep(440,.04,"square",.03)}, win(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18,"triangle",.1),i*130))}, spawn(){beep(300,.12,"triangle",.05,600)}};
+function say(t, cancel){ if (!narrator || !window.speechSynthesis) return; try { const s = speechSynthesis; if (cancel !== false) s.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "es-CO"; u.rate = 1.08;
+  const v = s.getVoices().find(x => /^es/i.test(x.lang)); if (v) u.voice = v; s.speak(u); } catch (e) {} }
+
+let S;
+function newGame(){
+  const pool = ITEMS.slice().sort(() => Math.random() - .5).slice(0, TOTAL);
+  S = {pool, i: -1, lane: 1, x: LANE_W * 1.5, score: 0, hits: 0, answered: 0, lives: LIVES, combo: 0, best: 0, gateY: -GATE_H, dur: 3.4, state: "countdown", t: 0, msg: "", msgT: 0, shake: 0, parts: [], scroll: 0, flash: 0, bannerWhy: "", over: false};
+  S.cd = 3; S.t = performance.now();
+}
+function spawn(){
+  S.i++; if (S.i >= TOTAL){ finish(); return; }
+  const it = S.pool[S.i]; S.item = {e: it[0], n: it[1], bin: it[2], why: it[3]};
+  S.dur = Math.max(1.55, 3.5 - S.i * 0.13); S.gateY = -GATE_H; S.state = "run"; S.sprite = 0; S.evaluated = false;
+  sfx.spawn(); say(`${S.item.n}. ¿En qué caneca va?`);
+}
+function burst(x, y, color, n){ for (let k = 0; k < n; k++){ const a = Math.random() * 6.283, sp = 80 + Math.random() * 220; S.parts.push({x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 60, life: .8 + Math.random() * .5, c: color}); } }
+function resolve(){
+  S.evaluated = true; S.answered++;
+  const ok = S.lane === S.item.bin, cx = S.lane * LANE_W + LANE_W / 2;
+  if (ok){
+    S.hits++; S.combo++; S.best = Math.max(S.best, S.combo);
+    const pts = 10 + Math.min(S.combo, 10) * 2 + (S.combo >= 5 ? 10 : 0); S.score += pts;
+    S.msg = S.combo >= 3 ? `🔥 ¡Racha x${S.combo}! +${pts}` : `¡Correcto! +${pts}`; S.msgT = 1.1; burst(cx, PY, BINS[S.item.bin].c, 28); sfx.ok(); S.state = "run";
+    if (S.combo === 3) say("¡Racha de tres!"); else if (S.combo === 5) say("¡Cinco seguidas! ¡Imparable!"); else if (S.combo === 8) say("¡Ocho seguidas! ¡Leyenda ecológica!"); else if (Math.random() < .35) say(["¡Eso es!","¡Bien hecho!","¡Excelente!","¡Así se hace!"][Math.floor(Math.random()*4)], false);
+    nextSoon(0.35);
+  } else {
+    S.lives--; S.combo = 0; S.shake = .5; S.flash = .35; sfx.bad(); burst(cx, PY, "#ff4d4d", 22);
+    S.bannerWhy = `${S.item.e} ${S.item.n} va en la caneca ${BINS[S.item.bin].n.toUpperCase()}. ${S.item.why}`;
+    S.state = "explain"; S.explainT = 0;
+    say(`No. ${S.item.n} va en la caneca ${BINS[S.item.bin].n}. ${S.item.why}`);
+  }
+}
+let waitNext = 0; function nextSoon(s){ S.state = "gap"; waitNext = s; }
+function finish(){
+  S.state = "over"; S.over = true;
+  const pct = Math.round(100 * S.hits / Math.max(1, S.answered));
+  const tone = pct >= 85 ? "¡Espectacular! Eres un verdadero guardián del planeta." : pct >= 60 ? "¡Muy bien! Sigue practicando." : "¡Ánimo! Con otra carrera lo dominas.";
+  say(`¡Fin de la carrera! Clasificaste bien ${S.hits} de ${S.answered}. Hiciste ${S.score} puntos. Tu mejor racha fue de ${S.best}. ${tone}`);
+  if (pct >= 60) sfx.win(); else sfx.bad();
+  const e = document.getElementById("end"); e.style.display = "flex";
+  e.innerHTML = `<h2>${pct >= 85 ? "🏆" : pct >= 60 ? "🌿" : "🌱"} ¡Fin de la carrera!</h2><p><b>${S.hits}</b> de <b>${S.answered}</b> bien clasificados · <b>${S.score}</b> puntos<br>Mejor racha: <b>${S.best}</b> 🔥</p><p>${tone}</p><button id="again">🔁 Correr otra vez</button>`;
+  document.getElementById("again").onclick = () => { e.style.display = "none"; newGame(); };
+  post({type: "streamlit:setComponentValue", dataType: "json", value: {id: Date.now(), score: S.score, hits: S.hits, total: S.answered, best: S.best}});
+}
+function roundRect(x, y, w, h, r){ g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
+let last = performance.now();
+function frame(now){
+  const dt = Math.min(.05, (now - last) / 1000); last = now; if (S) update(dt); if (S) draw(now); requestAnimationFrame(frame);
+}
+function update(dt){
+  S.scroll = (S.scroll + dt * (160 + S.i * 14 + (S.combo >= 5 ? 220 : 0))) % 64;
+  S.x += (S.lane * LANE_W + LANE_W / 2 - S.x) * Math.min(1, dt * 14);
+  S.parts.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 520 * dt; p.life -= dt; }); S.parts = S.parts.filter(p => p.life > 0);
+  S.shake = Math.max(0, S.shake - dt); S.flash = Math.max(0, S.flash - dt); S.msgT = Math.max(0, S.msgT - dt);
+  if (S.state === "countdown"){ const left = 3 - (performance.now() - S.t) / 1000; if (Math.ceil(left) !== S.cd){ S.cd = Math.ceil(left); if (S.cd > 0) beep(500, .08); } if (left <= 0) spawn(); }
+  else if (S.state === "run"){ S.gateY += (PY - GATE_H / 2 + 20 + GATE_H) / S.dur * dt; if (!S.evaluated && S.gateY + GATE_H >= PY - 10) resolve(); }
+  else if (S.state === "gap"){ S.gateY += 380 * dt; waitNext -= dt; if (waitNext <= 0) spawn(); }
+  else if (S.state === "explain"){ S.explainT += dt; const speaking = narrator && window.speechSynthesis && speechSynthesis.speaking, minT = narrator ? 1.6 : 3.8; if (S.explainT > 9 || (S.explainT > minT && !speaking)){ if (S.lives <= 0) finish(); else spawn(); } }
+}
+function draw(now){
+  g.save(); if (S.shake > 0) g.translate((Math.random() - .5) * 14 * S.shake * 2, (Math.random() - .5) * 14 * S.shake * 2);
+  const lvl = Math.floor(Math.max(0, S.i) / 5), skies = [["#1d4d2f","#12331f"],["#164a63","#0e2f40"],["#4d2a63","#2b1740"]], sk = skies[lvl % 3];
+  const bg = g.createLinearGradient(0, 0, 0, H); bg.addColorStop(0, sk[0]); bg.addColorStop(1, sk[1]); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  for (let l = 0; l < 4; l++){ g.fillStyle = l % 2 ? "#ffffff0a" : "#ffffff14"; g.fillRect(l * LANE_W, 0, LANE_W, H); }
+  g.strokeStyle = "#ffffff55"; g.lineWidth = 3; g.setLineDash([26, 38]); g.lineDashOffset = -S.scroll * 2;
+  for (let l = 1; l < 4; l++){ g.beginPath(); g.moveTo(l * LANE_W, 0); g.lineTo(l * LANE_W, H); g.stroke(); } g.setLineDash([]);
+  if (S.combo >= 5){ g.strokeStyle = "#ffe14d66"; g.lineWidth = 2; for (let k = 0; k < 14; k++){ const x = (k * 97 + S.scroll * 9) % W; g.beginPath(); g.moveTo(x, 0); g.lineTo(x, H); g.stroke(); } }
+  // canecas que se acercan
+  if (S.state === "run" || S.state === "gap" || S.state === "explain"){
+    for (let l = 0; l < 4; l++){ const x = l * LANE_W + 8, y = S.gateY, w = LANE_W - 16, hot = S.state === "explain" && l === S.item.bin;
+      g.fillStyle = BINS[l].c; roundRect(x, y, w, GATE_H, 14); g.fill(); g.lineWidth = hot ? 6 : 3; g.strokeStyle = hot ? "#ffe14d" : "#ffffffaa"; g.stroke();
+      g.fillStyle = "#fff"; g.font = "bold 15px system-ui"; g.textAlign = "center"; g.fillText(BINS[l].n.toUpperCase(), x + w / 2, y + 58); g.font = "28px serif"; g.fillText(BINS[l].e, x + w / 2, y + 34); }
+  }
+  // corredor
+  const bob = Math.sin(now / 90) * 5; g.font = "56px serif"; g.textAlign = "center"; g.fillText("🏃", S.x, PY + bob + 20);
+  g.fillStyle = "#0004"; g.beginPath(); g.ellipse(S.x, PY + 34, 24, 7, 0, 0, 6.283); g.fill();
+  S.parts.forEach(p => { g.globalAlpha = Math.max(0, p.life); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, 5, 0, 6.283); g.fill(); }); g.globalAlpha = 1;
+  g.restore();
+  if (S.flash > 0){ g.fillStyle = `rgba(255,60,60,${S.flash})`; g.fillRect(0, 0, W, H); }
+  // HUD
+  g.fillStyle = "#0b1f16d9"; roundRect(8, 8, W - 16, 96, 16); g.fill();
+  if (S.item){ g.font = "58px serif"; g.textAlign = "left"; g.fillText(S.item.e, 22, 78); g.fillStyle = "#f4eedb"; g.font = "bold 21px system-ui"; g.fillText(S.item.n.charAt(0).toUpperCase() + S.item.n.slice(1), 100, 50); g.font = "15px system-ui"; g.fillStyle = "#cfe9d7"; g.fillText("¿En qué caneca va?", 100, 76); }
+  g.textAlign = "right"; g.fillStyle = "#ffe14d"; g.font = "bold 22px system-ui"; g.fillText(`⭐ ${S.score}`, W - 20, 36); g.fillText("❤️".repeat(Math.max(0, S.lives)) || "💔", W - 20, 66);
+  g.fillStyle = "#cfe9d7"; g.font = "13px system-ui"; g.fillText(`${Math.max(0, S.i + 1)}/${TOTAL}${S.combo >= 2 ? "  🔥x" + S.combo : ""}`, W - 20, 92);
+  if (S.state === "countdown"){ g.fillStyle = "#0b1f16aa"; g.fillRect(0, 0, W, H); g.fillStyle = "#ffe14d"; g.font = "bold 120px system-ui"; g.textAlign = "center"; g.fillText(S.cd > 0 ? S.cd : "¡YA!", W / 2, H / 2); }
+  if (S.msgT > 0){ g.globalAlpha = Math.min(1, S.msgT * 2); g.fillStyle = "#7cff9b"; g.font = "bold 30px system-ui"; g.textAlign = "center"; g.fillText(S.msg, W / 2, PY - 150 - (1.1 - S.msgT) * 40); g.globalAlpha = 1; }
+  if (S.state === "explain"){ g.fillStyle = "#3b0d12ee"; roundRect(16, H / 2 - 120, W - 32, 150, 16); g.fill(); g.fillStyle = "#fff"; g.font = "bold 18px system-ui"; g.textAlign = "center";
+    const words = S.bannerWhy.split(" "); let line = "", y = H / 2 - 84; words.forEach(w => { if (g.measureText(line + w).width > W - 70){ g.fillText(line, W / 2, y); y += 26; line = ""; } line += w + " "; }); g.fillText(line, W / 2, y); }
+}
+// controles
+function moveBy(d){ if (!S || S.state === "over") return; const n = Math.max(0, Math.min(3, S.lane + d)); if (n !== S.lane){ S.lane = n; sfx.move(); } }
+addEventListener("keydown", e => { if (["ArrowLeft","a","A"].includes(e.key)){ moveBy(-1); e.preventDefault(); } else if (["ArrowRight","d","D"].includes(e.key)){ moveBy(1); e.preventDefault(); } });
+let sx = null;
+cv.addEventListener("pointerdown", e => { sx = e.clientX; const r = cv.getBoundingClientRect(); const lane = Math.max(0, Math.min(3, Math.floor((e.clientX - r.left) / r.width * 4))); if (S && S.state !== "over" && lane !== S.lane){ S.lane = lane; sfx.move(); } });
+cv.addEventListener("pointermove", e => { if (sx !== null && Math.abs(e.clientX - sx) > 40){ moveBy(e.clientX > sx ? 1 : -1); sx = e.clientX; } });
+addEventListener("pointerup", () => sx = null);
+document.getElementById("go").onclick = () => { document.getElementById("start").style.display = "none"; sound = sound; if (ac && ac.state === "suspended") ac.resume(); newGame(); };
+window.addEventListener("message", e => { if (e.data && e.data.type === "streamlit:render"){ const a = e.data.args || {}; narrator = a.narrator !== false; sound = a.sound !== false; } });
+post({type: "streamlit:componentReady", apiVersion: 1}); post({type: "streamlit:setFrameHeight", height: 700});
+requestAnimationFrame(frame);
+</script></body></html>

@@ -1,0 +1,17 @@
+EcoGuardian AI — corrección del reproductor ambiental
+====================================================
+
+La canción «Reciclar – El medio ambiente vamos a cuidar» está en el menú
+del perfil, debajo del interruptor «Sonidos y ambiente». No pertenece a
+Balloon Bash.
+
+Corrección: el reproductor HTML ahora se muestra en un iframe con altura
+visible (76 px), con botón de reproducir/pausar y volumen inicial al 10 %.
+El navegador puede exigir que el usuario pulse el botón para permitir audio.
+
+Prueba manual:
+1. Iniciar la app y abrir el menú del perfil.
+2. Activar «Sonidos y ambiente».
+3. Pulsar «Reproducir canción ambiental».
+4. Confirmar que el estado cambia a «Sonando suavemente · 10 %».
+5. Pausar y comprobar que deja de sonar.

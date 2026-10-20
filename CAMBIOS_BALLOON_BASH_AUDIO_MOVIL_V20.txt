@@ -1,0 +1,13 @@
+ECOGUARDIAN AI — CAMBIOS BALLOON BASH
+
+- Música real de lobby: Fun Game (Cyberwave Orchestra).
+- Música de tensión: pista HitsLab aportada por el usuario.
+- Música de revelación: Adventure Game Loop (Cyberwave Orchestra).
+- Efecto real de globo inflándose: archivo MP3 aportado por el usuario.
+- Se reemplazó el bucle musical retro sintetizado por pistas MP3 HTML5.
+- Se añadieron siluetas brillantes en el lobby y fondo ambiental animado.
+- En móvil, el botón grande BOMBEAR/INFLAR permanece disponible aunque el sensor esté activado.
+- Se conserva el permiso explícito de DeviceMotionEvent, umbral de movimiento y envío por lotes.
+
+IMPORTANTE: comprobar las licencias/atribuciones de cada MP3 antes de publicar en Internet.
+La comprobación de archivos y pruebas automatizadas no sustituye pruebas reales en Safari iOS, Chrome Android ni una partida multiusuario desplegada por HTTPS.

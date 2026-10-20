@@ -1,0 +1,17 @@
+EcoGuardian AI - v9: corrección de colores y legibilidad
+=========================================================
+
+Causa del problema
+- Las reglas globales de botones (fondo claro con !important) pisaban los colores de las canecas del juego: quedaba texto blanco sobre fondo casi blanco (contraste 1.07:1, ilegible).
+- Al pasar el cursor, TODAS las canecas se volvían verdes (la caneca roja y la negra cambiaban de color).
+- En el menú lateral, el expansor «Configuración» tenía fondo casi blanco con letras claras, y los números de los deslizadores eran oscuros sobre verde oscuro.
+- Las tarjetas del reto usaban blanco sobre verde/azul claro (contraste insuficiente).
+
+Qué se cambió (solo estilos; la lógica del examen no cambió)
+- Botones de canecas, opciones, "Siguiente reto": colores fijos con prioridad máxima; texto y fondo siempre contrastan, también al pasar el cursor y cuando están deshabilitados.
+- Guía de canecas (Inicio): cada caneca conserva su color al pasar el cursor.
+- Menú lateral: expansor, etiquetas, deslizadores y subtítulos con texto claro sobre fondo oscuro.
+- Tarjetas del reto, avisos de acierto/error, cabecera del juego y pantalla final: colores con contraste mínimo 4.5:1.
+- Se fuerza el esquema claro del navegador para que el modo oscuro del sistema no mezcle colores.
+
+Verificación: se midió el contraste (texto vs fondo) de cada elemento en un navegador real (Chromium) con el CSS de la aplicación: antes 11 elementos/estados bajo 4.5:1, ahora ninguno. No se pudo arrancar Streamlit completo en este entorno; confirma visualmente en tu navegador (Ctrl+F5 para limpiar la caché).

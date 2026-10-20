@@ -1,0 +1,22 @@
+EcoGuardian AI v18 — refuerzo de notificaciones
+
+Cambios incluidos
+- Se conserva el sondeo interno de la campana cada 4 segundos cuando la versión instalada de Streamlit admite fragmentos.
+- Se añade una opción voluntaria «Activar avisos del navegador» en el panel de la campana.
+- El permiso del navegador se solicita únicamente después de pulsar el botón; no se fuerza al abrir la página.
+- Cuando el permiso está concedido, se intenta mostrar una notificación del sistema mientras la aplicación está abierta y detecta una novedad.
+- Los avisos del sistema usan un texto genérico: no muestran nombres, remitentes ni el cuerpo de mensajes privados en la pantalla bloqueada.
+- Se asigna un identificador por aviso para evitar duplicados en el mismo navegador.
+- Si el navegador bloquea el permiso o no admite la API, la campana, el aviso interno y el sonido continúan disponibles.
+- Se corrige el entorno de pruebas para que todos los módulos usen la misma instancia de Streamlit simulado durante la colección.
+
+Verificación automatizada
+- python -m py_compile app.py eco/*.py tests/*.py: aprobado.
+- python -m pytest -q: 49 pruebas aprobadas.
+- python tests/run_standalone.py: 23 pruebas aprobadas.
+
+Limitaciones que se mantienen
+- Esta implementación no es Web Push: no garantiza avisos con la pestaña cerrada ni con el navegador detenido.
+- El permiso y la entrega del aviso del sistema dependen del navegador, de un contexto seguro HTTPS (o localhost) y de que el navegador permita la API desde el componente incrustado.
+- No se realizó una prueba visual en navegador real en este entorno.
+- Para push real con la app cerrada hace falta un servicio worker servido con el alcance correcto, API de suscripciones, claves VAPID, envío desde un backend y almacenamiento persistente de las suscripciones. No se simula ni se declara como implementado.

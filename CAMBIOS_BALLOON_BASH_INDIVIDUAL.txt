@@ -1,0 +1,13 @@
+BALLOON BASH — AJUSTE PARA PRUEBA
+
+- Se renombró el juego individual como Balloon Bash.
+- Se sustituyó el reto anterior de estimación numérica por una mecánica de inflado y parada.
+- No hay cronómetro: el jugador puede decidir su ritmo.
+- Cada bombeo incrementa el globo de forma variable; al alcanzar el 100 %, explota automáticamente y la ronda da 0 puntos.
+- El tamaño visual cambia, el globo tiembla más cuando está grande y el personaje muestra reacciones distintas.
+- Al parar sin explotar, la puntuación se calcula según la cercanía a un objetivo secreto de esa partida.
+- EcoParty conserva su selección de minijuegos de grupo y ya no incluye Balloon Bash.
+
+NOTA DE PRUEBA
+- Pruebas automatizadas: 52 pasaron.
+- La animación se basa en CSS y expresiones ilustradas; es una primera versión funcional para probar y ajustar, no un modelo 3D real.

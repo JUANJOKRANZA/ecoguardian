@@ -1,0 +1,20 @@
+EcoGuardian AI v12 - resumen de cambios
+
+Implementado:
+1. Registro/inicio de sesión de docente con aprobación administrativa.
+2. Panel de aprobación para solicitudes de estudiantes y docentes.
+3. Módulo EcoPuff con salas de código, preguntas de canecas, rondas configurables, puntuación persistente, ranking final y chat persistente de sala.
+4. Mensajería privada básica docente-estudiante.
+5. Acceso a EcoPuff desde el panel del estudiante.
+6. Migraciones SQLite no destructivas para tablas puff_rooms, puff_players, puff_answers y class_messages.
+
+Verificación ejecutada:
+- python -m py_compile app.py: correcto.
+- pytest -q: 9 passed.
+
+Pendiente explícito (no simular como completado):
+- Backend PostgreSQL compartido / aislamiento multiinstitución.
+- Sincronización de competición en tiempo real automática y temporizador de servidor transaccional.
+- Modos por equipos, torneos intercolegiales, desempate sudden death, certificados y recompensas completas.
+- Bancos de preguntas completos para contaminación auditiva y visual.
+- Auditoría completa de permisos docentes por clase y pruebas E2E de cámara/micrófono en navegador.

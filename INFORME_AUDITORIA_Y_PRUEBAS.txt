@@ -1,0 +1,46 @@
+INFORME DE AUDITORÍA Y PRUEBAS — EcoGuardian AI
+Fecha: 2026-10-16
+
+ARCHIVOS INSPECCIONADOS
+- app.py (aplicación Streamlit de aproximadamente 137 KB)
+- requirements.txt
+- LEEME_PRIMERO.txt
+- notas de cambios visuales y configuración HTTPS
+- estructura completa del ZIP (14 entradas; no contiene pruebas automatizadas ni el prompt maestro referido)
+
+CAMBIOS IMPLEMENTADOS
+1. Restauración de sesión persistente: la sesión ahora debe coincidir con el rol actual de la cuenta. Si la cuenta fue eliminada, desautorizada o su rol no coincide con el rol de la sesión, se revoca el token y se limpian los parámetros de sesión de la URL.
+2. Motor de examen: se añade validación de límites antes de acceder a una pregunta, para evitar un error de índice ante un estado inválido o manipulado.
+3. Se añadió una suite inicial de pruebas automatizadas en tests/test_core.py y requirements-dev.txt para instalar pytest en desarrollo.
+
+PRUEBAS EJECUTADAS
+- pytest tests: APROBADO, 7 pruebas.
+  * aleatorización sin preguntas duplicadas para residuos, auditiva y combinada
+  * persistencia y reanudación tras reconectar la base de datos
+  * prevención de respuesta duplicada
+  * rechazo de respuesta inválida y posición fuera de rango
+  * restricción por pertenencia a la sala
+  * bloqueo de acceso a sala cerrada
+  * hash/verificación de contraseña
+  * finalización y resumen del examen
+  * revocación de sesión persistente cuando el rol ya no coincide
+- Compilación sintáctica de app.py: APROBADA (py_compile, código de salida 0).
+- Instalación de dependencias por pip: BLOQUEADA; el entorno no pudo resolver el servidor de paquetes (sin acceso DNS/red).
+- Arranque de Streamlit: NO VERIFICADO. No se pudo confirmar un proceso Streamlit funcional en este entorno.
+- Navegador real, consola del navegador y pruebas visuales: NO EJECUTADAS.
+- Adjuntos de chat: NO IMPLEMENTADOS en el proyecto original; no hay esquema ni flujo de archivos adjuntos.
+- Campeonatos/desempates: NO IMPLEMENTADOS en el proyecto original; no se encontró motor de campeonatos.
+- Aislamiento entre colegios: NO IMPLEMENTADO en el proyecto original; no existen identificadores de colegio/tenant en el esquema.
+- Recuperación de cuentas: NO IMPLEMENTADA en el proyecto original; no hay flujo de recuperación ni proveedor de correo configurado.
+- Notificaciones: existe un centro de notificaciones para registros y mensajes; no se verificó con navegador real ni se probó entrega externa.
+- Adjuntos, permisos entre colegios, campeonatos y recuperación de cuentas: NO APROBADOS, porque no existen aún y requieren especificación de producto y pruebas de integración.
+
+BLOQUEOS PARA DECLARARLO TERMINADO
+1. El ZIP recibido no contiene el prompt maestro citado. Sin él no es posible comprobar fidelidad funcional a los requisitos originales.
+2. Las funciones de campeonatos, adjuntos, aislamiento multi-colegio y recuperación de cuentas no están presentes.
+3. No se pudo instalar Streamlit desde el entorno ni ejecutar una prueba de navegador.
+4. El proyecto utiliza SQLite local. No se incluye configuración de producción con base de datos compartida, copias de seguridad y secretos gestionados.
+5. El token de sesión se transporta en un parámetro de URL (`eg_session`); aunque se almacena su hash en la base de datos, la estrategia debe revisarse antes de publicar en internet para reducir exposición en historial, registros o enlaces compartidos.
+
+ESTADO
+INCOMPLETO — no publicar como producción. No se genera ZIP final porque siguen pendientes funcionalidades esenciales y pruebas de integración requeridas por la solicitud.

@@ -1,0 +1,47 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+secrets.toml
+*.pem
+*.key
+
+# Local databases and backups
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.sqlite3-journal
+*.bak
+*.backup
+
+# User uploads and generated files (keep source assets explicitly tracked if needed)
+uploads/
+user_uploads/
+media_uploads/
+
+# Test / tool caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+

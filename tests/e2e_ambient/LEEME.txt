@@ -1,0 +1,15 @@
+Prueba de navegador (opcional) de la música ambiental
+=====================================================
+Simula el protocolo de componentes de Streamlit con un iframe real y comprueba, en Chromium:
+reproducir/pausar, volumen real, persistencia al cerrar/abrir el perfil y al recrear los iframes
+(cambio de página), un único <audio>, bucle, política de juego (atenuar/pausar/reanudar),
+desactivar, error de carga (404) y autoplay bloqueado (EMULADO: ver nota).
+
+Uso:
+  1) npm install playwright   (y descargar un Chromium: npx playwright install chromium)
+  2) python tests/e2e_ambient/server.py &        (sirve eco/web en http://127.0.0.1:8765)
+  3) CHROMIUM_PATH=/ruta/a/chrome node tests/e2e_ambient/e2e.js
+
+Nota: Chromium sin interfaz no aplica la política real de autoplay, así que el caso «bloqueado»
+se emula haciendo que play() rechace con NotAllowedError hasta que haya un clic real.
+Esta prueba NO ejecuta Streamlit; la integración con Streamlit real debe verificarse a mano.

@@ -1,0 +1,15 @@
+EcoGuardian AI v18 - notificaciones y sonido ambiente
+
+1. Campana de notificaciones FUERA del menú del perfil, en la barra superior, con contador.
+   - Se consulta la base de datos cada 4 s (BELL_POLL en eco/pages.py). Al llegar algo nuevo
+     se recarga la pantalla, aparece un aviso abajo ("X solicitó acceso como estudiante",
+     "@usuario te envió un mensaje", "Ha llegado una notificación nueva.") y suena un timbre.
+   - Administrador: ve las solicitudes de estudiantes Y docentes y puede Autorizar o Rechazar
+     desde la campana, o ir al panel de autorizaciones. La acción se valida en el servidor.
+   - Docentes y estudiantes: ven sus mensajes sin leer y pueden marcarlos como leídos.
+2. Ambiente: ahora solo aves cantando (trinos, silbidos y llamadas suaves con un eco ligero).
+   Se eliminó el viento/ruido de fondo. Se activa tras el primer clic o toque en la página.
+3. Pruebas nuevas en tests/test_smoke_ui.py (39 aprobadas con el Streamlit simulado).
+
+NO verificado en un navegador real: el aspecto de la campana, la posición del aviso emergente
+y el sonido. Revísalo con `streamlit run app.py` (Streamlit >= 1.40).

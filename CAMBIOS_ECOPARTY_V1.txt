@@ -1,0 +1,20 @@
+EcoGuardian AI · EcoParty v1
+
+Implementado
+- Nuevo juego EcoParty en la biblioteca, separado de Arena en Vivo.
+- Modo local para 2–12 nombres en una sola pantalla, con turnos y marcador.
+- Modo en línea con PIN, hasta 12 cuentas por sala y control de anfitrión.
+- 12 retos de fiesta ecológica; de 3 a 12 rondas por partida.
+- Respuestas validadas en servidor, una respuesta por jugador y ronda, puntuación por acierto y rapidez.
+- Fases sincronizadas de pregunta y revelación; transición idempotente con bloqueo de base de datos.
+- Tablas eco_party_rooms, eco_party_players y eco_party_answers, creadas por migración idempotente sin borrar tablas anteriores.
+- Se conserva el código existente de Arena, Biblioteca, notificaciones y funciones de EcoGuardian.
+
+Verificación
+- Compilación: python -m py_compile app.py eco/*.py tests/*.py
+- Suite completa: python -m pytest -q (51 passed).
+- Pruebas de lógica: python tests/run_standalone.py (25 aprobadas).
+- No se realizó prueba visual real en navegador ni prueba de carga de 12 dispositivos físicos.
+
+Requisito para multijugador por internet
+Todos los jugadores deben usar la misma instancia desplegada y una base de datos compartida/persistente. No usar SQLite local independiente en múltiples instancias de servidor. La versión usa actualización periódica desde Streamlit; no implementa WebSockets dedicados ni audio/video en directo.

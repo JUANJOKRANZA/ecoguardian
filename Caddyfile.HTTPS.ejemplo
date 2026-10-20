@@ -1,0 +1,9 @@
+# Ejemplo para Caddy en el servidor del colegio.
+# 1) Sustituye ecoguardian.colegio.test por un nombre DNS interno real.
+# 2) Ese nombre debe resolver a la IP reservada del servidor.
+# 3) Instala Caddy en el servidor y confía su CA raíz en TODOS los ordenadores cliente.
+# No uses este nombre de ejemplo sin configurar el DNS/archivo hosts.
+ecoguardian.colegio.test {
+    tls internal
+    reverse_proxy 127.0.0.1:8501
+}

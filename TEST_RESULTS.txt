@@ -1,0 +1,17 @@
+RESULTADOS REALES DE PRUEBAS — ENTREGA PARCIAL
+
+Comando: python -m py_compile app.py
+Resultado: APROBADO (código de salida 0)
+
+Comando: pytest -q
+Resultado: 9 passed in 0.45s
+
+No ejecutadas / bloqueadas:
+- Arranque Streamlit y comprobación HTTP: Streamlit no estaba instalado en el entorno de preparación.
+- Pruebas de interfaz de navegador.
+- Cámara y micrófono en HTTPS.
+- SMTP/correo real y recuperación de cuenta.
+- Concurrencia multiusuario, campeonatos en tiempo real y PostgreSQL.
+- Pruebas de seguridad integrales, aislamiento multicolegio y restauración de respaldo.
+
+Interpretación: los resultados aprobados se limitan a las pruebas automatizadas existentes y a la sintaxis Python. No constituyen certificación de producción.

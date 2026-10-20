@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root{--neon:#7cff6b;--lime:#d4ff4d;--ink:#eaffd8;--warn:#ff4d4d}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+html,body{margin:0;font-family:"Courier New",ui-monospace,monospace;font-weight:700;color:var(--ink);background:#23402a}
+#box{padding:12px;display:flex;flex-direction:column;gap:10px;min-height:440px;
+ background-image:linear-gradient(rgba(150,255,150,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(150,255,150,.12) 1px,transparent 1px);background-size:36px 36px;border-radius:14px;border:3px solid var(--neon)}
+#status{text-align:center;font-size:1.3rem;line-height:1.45;color:var(--neon);text-shadow:0 0 10px #7cff6b88;min-height:3.2em}
+#sub{text-align:center;font-size:.85rem;opacity:.9;min-height:2.4em}
+button{font:inherit;font-size:1.05rem;color:#0b1f10;background:var(--neon);border:0;border-bottom:5px solid #2f9a2a;border-radius:12px;padding:14px;width:100%;cursor:pointer;text-transform:uppercase}
+button:active{transform:translateY(3px);border-bottom-width:2px}
+#motion{background:#2f5a35;color:var(--ink);border-bottom-color:#17351b;font-size:.9rem;display:none}
+#pump{background:#4cd8ff;color:#06202a;border-bottom-color:#147c99;font-size:1.35rem;padding:25px 8px;display:none;touch-action:manipulation}
+#brake{background:var(--warn);border-bottom-color:#8f1c1c;color:#fff;font-size:1.5rem;padding:26px 8px;display:none}
+#pad{display:none;flex:1;min-height:110px;border:3px dashed #7cff6b88;border-radius:16px;align-items:center;justify-content:center;text-align:center;padding:10px;font-size:1rem}
+#pad.hit{background:#7cff6b22}
+#keys{text-align:center;font-size:.75rem;opacity:.8}
+</style></head><body>
+<div id="box">
+  <div id="status">Conectando…</div><div id="sub"></div>
+  <button id="motion">📳 Activar sensor de movimiento</button>
+  <div id="pad">Sacude el teléfono hacia abajo<br>(o toca aquí al ritmo)</div>
+  <button id="pump">🎈 ¡BOMBEAR / INFLAR!</button>
+  <button id="brake">¡Frenar / Guardar!</button>
+  <div id="keys"></div>
+</div>
+<script>
+"use strict";
+const $ = s => document.querySelector(s);
+const post = m => window.parent.postMessage(Object.assign({isStreamlitMessage:true}, m), "*");
+const sendValue = v => post({type:"streamlit:setComponentValue", value:v, dataType:"json"});
+const vib = p => { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} };
+let v = {joined:false}, motionOn = false, seq = 0, pend = 0, powSum = 0, lastBaton = null, wasDone = false;
+
+function render(){
+  const play = v.phase === "inflate" && v.active && !v.done;
+  $("#brake").style.display = play ? "block" : "none";
+  $("#pump").style.display = play ? "block" : "none";
+  $("#pad").style.display = play && !motionOn ? "flex" : "none";
+  const mate = v.mate && v.mate.length ? ` · Equipo con ${v.mate.join(", ")}` : "";
+  let s = "…", sub = "";
+  if (!v.joined){ s = "Sala no disponible"; }
+  else if (v.phase === "lobby"){ s = "✅ ¡Dentro!"; sub = "Espera a que el profesor inicie." + mate; }
+  else if (v.phase === "memorize"){ s = "👀 MIRA LA PANTALLA GRANDE"; sub = "Memoriza el tamaño en el panel del profesor."; }
+  else if (v.phase === "inflate"){
+    if (v.done){ s = "🔒 Listo"; sub = "Mira el panel para ver tu resultado."; }
+    else if (v.active){ s = "🎈 ¡INFLA!"; sub = "Sacude el teléfono hacia abajo (PC: barra espaciadora). ¡Mira SIEMPRE el panel!"; }
+    else { s = "⏳ Espera tu turno"; sub = "Tu compañero/a está inflando. ¡Prepárate!"; }
+  }
+  else if (v.phase === "reveal"){ s = "📺 MIRA EL PANEL"; sub = "El resultado de la ronda está en pantalla."; }
+  else if (v.phase === "final"){ s = "🏁 ¡Fin!"; sub = "Gracias por jugar."; }
+  $("#status").textContent = s; $("#sub").textContent = sub;
+  post({type:"streamlit:setFrameHeight", height: $("#box").offsetHeight + 8});
+}
+function pump(power){
+  if (v.phase !== "inflate" || !v.active || v.done) return;
+  pend++; powSum += power; vib(Math.round(15 + 25 * power));
+  const p = $("#pad"); p.classList.add("hit"); setTimeout(() => p.classList.remove("hit"), 80);
+}
+function brake(){ if (v.phase === "inflate" && v.active && !v.done){ sendValue({id: ++seq, pumps: 0, power: 0, brake: true}); vib(80); } }
+setInterval(() => { if (pend > 0){ sendValue({id: ++seq, pumps: pend, power: powSum / pend, brake: false}); pend = 0; powSum = 0; } }, 220);
+
+$("#brake").onclick = brake;
+$("#pump").addEventListener("pointerdown", e => { e.preventDefault(); pump(0.7); });
+$("#pad").addEventListener("pointerdown", () => pump(0.6));
+addEventListener("keydown", e => {                       // PC: espacio infla (sin autorrepetición), Enter frena
+  if (e.code === "Space"){ e.preventDefault(); if (!e.repeat) pump(0.7); }
+  else if (e.key === "Enter"){ e.preventDefault(); brake(); }
+});
+let g = [0,0,0], armed = true, lastT = 0;
+function onMotion(e){                                    // golpe vertical sobre el eje de la gravedad
+  const a = e.accelerationIncludingGravity; if (!a || a.x == null) return;
+  g = g.map((x, i) => 0.9 * x + 0.1 * [a.x, a.y, a.z][i]);
+  const n = Math.hypot(...g) || 1, lin = [a.x - g[0], a.y - g[1], a.z - g[2]];
+  const m = Math.abs((lin[0]*g[0] + lin[1]*g[1] + lin[2]*g[2]) / n), now = performance.now();
+  if (armed && m > 10.5 && now - lastT > 180){ armed = false; lastT = now; pump(Math.min(1, m / 25)); }
+  else if (m < 3.5) armed = true;
+}
+async function enableMotion(){
+  try {
+    if (typeof DeviceMotionEvent !== "undefined" && typeof DeviceMotionEvent.requestPermission === "function"){
+      if ((await DeviceMotionEvent.requestPermission()) !== "granted") return;
+    }
+    addEventListener("devicemotion", onMotion); motionOn = true; $("#motion").style.display = "none"; vib(40); render();
+  } catch (e) { $("#sub").textContent = "No se pudo activar el sensor; usa el área de toque."; }
+}
+const touch = matchMedia("(pointer:coarse)").matches || "ontouchstart" in window;
+if (touch && typeof DeviceMotionEvent !== "undefined"){ $("#motion").style.display = "block"; $("#motion").onclick = enableMotion; }
+$("#keys").textContent = touch ? "" : "PC: barra espaciadora = inflar · Enter = frenar";
+if (!touch) $("#pad").innerHTML = "Barra espaciadora al ritmo = inflar<br>Enter = frenar";
+
+window.addEventListener("message", e => {
+  if (!e.data || e.data.type !== "streamlit:render") return;
+  const nv = (e.data.args || {}).view || {joined:false};
+  if (lastBaton !== null && nv.baton !== lastBaton && nv.active) vib([80, 60, 80]);   // te toca el relevo
+  lastBaton = nv.baton;
+  if (nv.done && !wasDone) vib(nv.popped ? [250, 80, 250, 80, 400] : 60);              // pop / frenado
+  wasDone = !!nv.done; v = nv; render();
+});
+post({type:"streamlit:componentReady", apiVersion:1});
+render();
+</script></body></html>

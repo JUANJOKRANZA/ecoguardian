@@ -1,0 +1,5 @@
+EcoGuardian AI - v7: ocultar la barra de herramientas de Streamlit
+
+Cambio: .streamlit/config.toml configura [client] toolbarMode = "minimal" para ocultar los controles integrados de Streamlit, incluido Deploy cuando la versión instalada respeta esta opción.
+
+Importante: cerrar y volver a iniciar Streamlit para que se aplique la configuración. Si Deploy continúa visible, la versión de Streamlit o el entorno puede ignorar esta preferencia; ese control pertenece a la interfaz del entorno y no a la cabecera de la aplicación.

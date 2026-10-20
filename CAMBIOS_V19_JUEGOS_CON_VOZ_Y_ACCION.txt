@@ -1,0 +1,29 @@
+EcoGuardian v19 · Juegos con voz, acción y Balloon Bash en el aula (todo dentro de la plataforma)
+
+1) Balloon Bash modo aula, DENTRO de la app (sin servidor aparte, sin puertos extra)
+   - Biblioteca → Balloon Bash → elegir: Solo / Salón (docente) / Unirme con PIN.
+   - Docente: "Crear sala" muestra el panel retro-arcade para proyectar (PIN, 4 carriles, Leaderboard).
+   - Alumno: "Unirme con PIN" abre el control (sacudir el celular, vibración, botón ¡Frenar / Guardar!;
+     PC: barra espaciadora e Enter). El celular nunca recibe silueta ni porcentajes.
+   - Memorizar (4 s) → inflar a ciegas (sin números ni barras; temblor/sudor/rojo al 85 %) → revelación
+     con silueta y porcentaje por carril. Modos: todos vs todos y relevos 2v2. Escalas distintas por carril.
+   - Salas en memoria del proceso de Streamlit (un solo proceso/servidor). Puntos guardados al terminar.
+   - Archivos: eco/bash_game.py, eco/bash_pages.py, eco/bridge.py, eco/web/balloon_host, eco/web/balloon_pad.
+   - Los componentes usan el protocolo de Streamlit sin compilar nada (HTML estático en eco/web/).
+   - Para el acelerómetro del celular el navegador exige HTTPS (ver Caddyfile.HTTPS.ejemplo); sin HTTPS
+     queda el área de toque.
+
+2) EcoRunner nuevo (acción)
+   - Carrera de 15 residuos: las 4 canecas vienen hacia ti, eliges carril (flechas / deslizar / tocar),
+     3 vidas, rachas con bonificación, efectos, y el locutor explica cada error. Guarda puntaje.
+   - Archivos: eco/runner.py, eco/web/eco_runner.
+
+3) Narrador en los juegos (eco/voice.py, interruptor "🎙️ Narrador")
+   - Misión por Niveles, Verdadero o Falso, Duelo de Imágenes y Parejas: el locutor lee la pregunta y dice
+     "¿Cuál es la respuesta correcta?" (en el duelo también describe ambas imágenes), reacciona al responder
+     (con rachas) y cierra hablando con tu resultado. Animaciones nuevas (rebote, sacudida, VS pulsante).
+   - EcoReto en Vivo, EcoVerdadero o Falso, EcoSonidos, EcoPuff, Arena y EcoParty también hablan.
+     En salas multijugador habla solo el dispositivo del anfitrión (proyector), para no superponer voces.
+   - Balloon Bash solo: avisa el peligro, la explosión y el resultado.
+
+Pruebas: python tests/run_standalone.py (con conftest) o pytest; nuevas en tests/test_bash_aula.py.

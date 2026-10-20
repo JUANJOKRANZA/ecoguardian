@@ -1,0 +1,64 @@
+EcoGuardian AI v23 — música ambiental persistente
+==================================================
+
+CAUSA DEL PROBLEMA (v22)
+- El reproductor era un iframe de components.html dentro del menú del perfil. Streamlit destruye y
+  recrea ese iframe en cada rerun (cambio de página, formulario, etc.), así que la canción se cortaba.
+- Además, eco_pages.ambient() montaba en CADA rerun otro iframe de altura 0 con el MP3 (~7 MB) en
+  base64 (~9,3 MB de HTML por iframe), sin controles: reproductores duplicados y mucho tráfico.
+- st.session_state vive en el servidor; el audio vive en el navegador. Guardar estado en Python no
+  mantiene un <audio> sonando.
+
+SOLUCIÓN
+- Un único <audio id="eg-ambient-audio" loop> en el DOCUMENTO PRINCIPAL del navegador, controlado por
+  eco/web/eco_ambient/controller.js (inyectado una sola vez, con control de versión, sin duplicados).
+  Las páginas de Streamlit son una SPA: cambiar de panel no recarga el documento, por eso la música sigue.
+- Componente eco/web/eco_ambient (declare_component, sin compilación):
+    · Instancia «engine» (sin interfaz, oculta con CSS) en cada rerun: envía enabled + modo.
+    · Instancia «panel» (dentro del menú del perfil): botón reproducir/pausar, volumen 0–100 %,
+      estado real, mensajes de error en español. Lee el estado real del controlador al abrirse.
+- La canción se sirve como archivo (eco/web/eco_ambient/reciclar_ambiente.mp3), ya no en base64,
+  y se descarga una sola vez (al abrir el panel o al pulsar Reproducir).
+- Volumen inicial 10 %; se guarda en localStorage del navegador. Cambia audio.volume real.
+- Pausar/desactivar son órdenes del usuario. Tras desactivar y reactivar «Sonidos y ambiente» la
+  música NO arranca sola: el panel muestra «Pausado» con el botón Reproducir.
+- Si el navegador bloquea la reproducción, el estado es «Bloqueado por el navegador» y se pide un clic.
+  Nunca se muestra «Reproduciendo» si audio.paused es verdadero.
+- Cerrar sesión detiene la música (el engine se monta con enabled=False en la pantalla de acceso).
+
+POLÍTICA DE AUDIO CON LOS JUEGOS
+- Selector «Durante los juegos» en el menú: Atenuar (25 % del volumen elegido, por defecto), Pausar o Mantener.
+- Se considera «juego» (eco/ambient.py: game_active): biblioteca con juego abierto, arena con sala,
+  EcoPuff, Verdadero o Falso y examen del estudiante.
+- Al salir del juego la música vuelve al volumen elegido; si estaba en pausa por política se reanuda,
+  salvo que el usuario la hubiera pausado antes.
+- Los efectos y voces de los juegos (Web Audio / SpeechSynthesis en sus propios iframes) NO se modificaron.
+
+ARCHIVOS
+  nuevos:     eco/ambient.py, eco/web/eco_ambient/{index.html,controller.js,reciclar_ambiente.mp3},
+              tests/test_ambient.py, tests/ambient_controller.test.js, tests/e2e_ambient/*
+  modificados: eco/pages.py (ambient(), _menu), eco/bridge.py (eco_ambient), eco/media.py (se retira
+              ambient_html), eco/theme.py (oculta el engine), app.py (engine también sin sesión),
+              tests/test_smoke_ui.py (prueba actualizada)
+  movido:     eco/assets/reciclar_ambiente.mp3 → eco/web/eco_ambient/reciclar_ambiente.mp3 (mismo archivo)
+
+LIMITACIONES
+- Recargar el navegador (F5) reinicia el <audio>: la música queda en pausa y hay que pulsar Reproducir.
+- iOS/iPadOS ignoran audio.volume: el panel lo avisa y el volumen se regula con los botones del equipo.
+- Requiere el mismo origen para el iframe del componente (comportamiento estándar de Streamlit) y que
+  no haya una política CSP que bloquee scripts en línea inyectados; si falla, el panel lo indica.
+- La integración con Streamlit REAL no se pudo ejecutar en el entorno de preparación (sin Streamlit
+  instalado ni red). Pruébala con `streamlit run app.py` siguiendo la lista de verificación manual.
+
+VERIFICACIÓN MANUAL SUGERIDA (con Streamlit real)
+1. Perfil → activar «Sonidos y ambiente» → Reproducir (10 %). 2. Cambiar de paneles: sigue sonando.
+3. Mover el volumen y navegar: se conserva. 4. Cerrar/abrir el perfil: estado y volumen reales.
+5. Abrir un juego: se atenúa/pausa según la política; al volver, se recupera. 6. Pausar y desactivar.
+7. Probar en móvil (Android/iOS) y en Safari.
+
+v24 — ARRANQUE AUTOMÁTICO
+- Al entrar a cualquier panel (admin, docente, estudiante) se intenta reproducir sola, al 10 %.
+- Si el navegador lo bloquea, empieza con el primer toque, clic o tecla en la página.
+- Se hace una sola vez por carga; si el usuario pausa o desactiva, no se vuelve a forzar.
+- Ningún navegador permite audio 100 % sin gesto: depende de su política (Chrome/Edge suelen permitirlo
+  según el historial del sitio; Safari/iOS casi siempre exigen el primer toque).

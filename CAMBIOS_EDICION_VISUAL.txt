@@ -1,0 +1,35 @@
+EcoGuardian AI — cambios de esta entrega
+========================================
+
+1. Interfaz y legibilidad
+- Reforzado el contraste de botones normales, primarios y controles del menú lateral.
+- Añadido foco visible para navegación con teclado.
+- Ajustados tamaños de letra, espaciado y altura de línea.
+- Mejorada la jerarquía de las tarjetas informativas y métricas.
+- Estilos adaptables para pantallas más pequeñas y respeto a la preferencia de movimiento reducido.
+
+2. Guía de canecas
+- La página de inicio muestra cuatro tarjetas: blanca, verde, negra y roja.
+- Tarjetas con título, descripción, ejemplos y buena práctica.
+- La tarjeta roja advierte que los residuos de manejo especial requieren seguir el protocolo del colegio y del gestor autorizado.
+
+3. EcoScan
+- Ampliada la salida del clasificador experimental a cuatro categorías.
+- Los términos específicos de residuos peligrosos o especiales pueden orientar a la categoría roja.
+- La clasificación por fotografía sigue siendo experimental: no debe usarse para decidir cómo manipular un residuo peligroso.
+
+4. Datos y despliegue
+- Se conserva SQLite y la estructura existente para reducir el riesgo de pérdida de datos.
+- Esta entrega no realiza una migración a PostgreSQL ni configura un servidor central. Eso requiere definir el entorno de alojamiento y hacer una migración y pruebas específicas.
+
+Antes de usarlo con estudiantes, prueba el inicio de sesión, registro y autorización, una sala de clase, EcoReto, EcoScan, las estadísticas y el permiso de micrófono en el navegador que vaya a utilizarse.
+
+5. Cabecera, perfil y notificaciones (edición v5)
+- Cabecera común para administrador y estudiante con marca, campana y acceso al perfil.
+- Campana con contador y desplegable compacto; muestra solicitudes/notificaciones del administrador o mensajes privados del estudiante.
+- Foto de perfil editable (PNG/JPG/WEBP), normalizada a JPEG y guardada en la base de datos local de la cuenta.
+- Nombre visible editable desde el perfil; opción para quitar la foto.
+- Se eliminó el expansor grande de mensajes del estudiante para evitar duplicar el centro de notificaciones.
+- Se añade una tabla de perfiles mediante migración compatible, sin borrar tablas existentes.
+
+Verificación de esta entrega: compilación sintáctica de Python correcta. En este entorno no están instalados Streamlit ni Altair, por lo que no se pudo arrancar una instancia completa ni verificar visualmente la interfaz; debe probarse en Windows con las dependencias del proyecto.

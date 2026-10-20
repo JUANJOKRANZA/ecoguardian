@@ -1,0 +1,22 @@
+ECOGUARDIAN AI — CAMBIOS INCLUIDOS EN ESTA ENTREGA
+
+1. EcoScan: claves de botones de canecas diferenciadas por zona para evitar StreamlitDuplicateElementKey cuando la misma caneca aparece en la guía y en el resultado.
+2. EcoAventura: biblioteca visual de juegos con tarjetas, acceso de prueba para administrador, juegos autorizados para docentes y biblioteca restringida a asignaciones vigentes para estudiantes.
+3. Permisos: flujo de autorización de juegos del administrador al docente y asignación del docente a estudiantes; controles de vigencia y revocación presentes en la aplicación.
+4. Asignación múltiple: el docente puede seleccionar varios juegos mediante casillas tipo tarjeta y asignarlos en una operación; se ofrece selector visual de estilo cuadros/círculos (el selector de estilo es indicativo; las casillas siguen siendo controles checkbox de Streamlit).
+5. Presentación del proyecto: sección del administrador con texto de exposición y botones de escuchar/detener usando la síntesis de voz disponible en el navegador.
+6. Registro/inicio de sesión: fondo botánico con contraste ajustado y eliminación del desenfoque del panel de pestañas; el resto del diseño mantiene la paleta verde.
+7. Perfil: edición de nombre visible, foto, correo, teléfono y presentación personal.
+8. Se mantienen las funciones existentes de EcoScan, EcoSilencio, EcoReto, EcoPuff, estadísticas y paneles por rol.
+
+PRUEBAS REALIZADAS
+- Compilación de app.py con py_compile: correcta.
+- Pruebas automatizadas del proyecto: 9 aprobadas.
+
+PENDIENTES / LIMITACIONES CONOCIDAS
+- No se hizo una prueba visual de extremo a extremo en navegador con cámara, audio y cada juego.
+- EcoSonidos usa tonos electrónicos demostrativos, no grabaciones reales de campo.
+- El límite de minutos por sesión se guarda en la asignación, pero no debe considerarse un cierre forzado en tiempo real hasta implementar y probar ese control.
+- Las asignaciones de estudiantes deben revisarse para asegurar que la pertenencia a grupos/clases se valida según el flujo institucional requerido.
+- La presentación de voz depende de la compatibilidad del navegador y de las voces instaladas.
+- La interfaz de registro usa una imagen externa de Unsplash; requiere conexión a internet para cargar esa fotografía.

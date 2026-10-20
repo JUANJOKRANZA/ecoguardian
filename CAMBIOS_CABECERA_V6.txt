@@ -1,0 +1,11 @@
+EcoGuardian AI - corrección de cabecera v6
+
+Cambios:
+- La marca, la campana de notificaciones, el avatar y el acceso al perfil se renderizan dentro de un único contenedor superior.
+- Se elimina la separación entre la tarjeta de marca y los controles de usuario que provocaba una cabecera visualmente fragmentada.
+- La barra tiene fondo sólido, borde discreto, sombra suave y posición sticky para acompañar el desplazamiento.
+- Se ajusta el ancho de columnas para reservar espacio al nombre y evitar truncarlo en pantallas de escritorio.
+- Se conserva la lógica existente de notificaciones y edición de foto/nombre.
+
+Validación realizada: compilación sintáctica de app.py con py_compile.
+Pendiente de validar en el navegador real del colegio: apariencia exacta según versión de Streamlit, resolución y datos reales.
